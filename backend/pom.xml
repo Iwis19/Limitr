@@ -9,11 +9,11 @@
         <version>3.4.4</version>
         <relativePath/>
     </parent>
-    <groupId>com.shieldgate</groupId>
+    <groupId>com.limitr</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>ShieldGate Backend</name>
-    <description>ShieldGate API rate limiting and abuse detection backend</description>
+    <name>Limitr Backend</name>
+    <description>Limitr API rate limiting and abuse detection backend</description>
     <properties>
         <java.version>21</java.version>
     </properties>
