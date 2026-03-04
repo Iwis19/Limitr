@@ -1,0 +1,49 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.7rem;
+}
+
+input,
+button {
+  border-radius: 10px;
+  border: 1px solid rgba(130, 148, 166, 0.35);
+  background: rgba(10, 20, 30, 0.65);
+  color: var(--text-main);
+  padding: 0.6rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+.table-wrap {
+  border: 1px solid rgba(130, 148, 166, 0.2);
+  border-radius: 14px;
+  background: rgba(10, 20, 30, 0.6);
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 780px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.65rem 0.55rem;
+  border-bottom: 1px solid rgba(130, 148, 166, 0.15);
+}
+
+@media (max-width: 900px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

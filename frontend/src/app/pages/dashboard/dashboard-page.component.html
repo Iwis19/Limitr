@@ -1,0 +1,48 @@
+<section class="page">
+  <header class="header">
+    <h2>Overview</h2>
+    <button type="button" (click)="refresh()">Refresh</button>
+  </header>
+
+  <div class="loading" *ngIf="loading">Loading metrics...</div>
+
+  <div class="cards" *ngIf="!loading && stats">
+    <article class="card">
+      <p>Requests / Minute</p>
+      <h3>{{ stats.requestsPerMinute || 0 }}</h3>
+    </article>
+    <article class="card">
+      <p>Active Bans</p>
+      <h3>{{ stats.activeBans || 0 }}</h3>
+    </article>
+    <article class="card">
+      <p>Base Limit</p>
+      <h3>{{ stats.rules?.baseLimitPerMinute || '-' }}</h3>
+    </article>
+    <article class="card">
+      <p>Throttled Limit</p>
+      <h3>{{ stats.rules?.throttledLimitPerMinute || '-' }}</h3>
+    </article>
+  </div>
+
+  <article class="panel" *ngIf="!loading">
+    <h3>Top Offenders (last hour)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Principal</th>
+          <th>Incidents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of stats?.topOffenders || []">
+          <td>{{ row.principalId }}</td>
+          <td>{{ row.incidents }}</td>
+        </tr>
+        <tr *ngIf="(stats?.topOffenders || []).length === 0">
+          <td colspan="2">No offender data yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+</section>

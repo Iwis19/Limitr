@@ -1,0 +1,42 @@
+<section class="page">
+  <header>
+    <h2>Request Logs</h2>
+  </header>
+
+  <form [formGroup]="filterForm" (ngSubmit)="search()" class="filters">
+    <input formControlName="principalId" placeholder="Principal ID" />
+    <input formControlName="statusCode" placeholder="Status code (e.g., 429)" />
+    <button type="submit">Filter</button>
+  </form>
+
+  <div class="table-wrap">
+    <div *ngIf="loading" class="loading">Loading logs...</div>
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Principal</th>
+          <th>IP</th>
+          <th>Method</th>
+          <th>Path</th>
+          <th>Status</th>
+          <th>Latency (ms)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td>{{ row.timestamp | date:'medium' }}</td>
+          <td>{{ row.principalId }}</td>
+          <td>{{ row.ipAddress }}</td>
+          <td>{{ row.httpMethod }}</td>
+          <td>{{ row.path }}</td>
+          <td>{{ row.statusCode }}</td>
+          <td>{{ row.latencyMs }}</td>
+        </tr>
+        <tr *ngIf="rows.length === 0">
+          <td colspan="7">No logs found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

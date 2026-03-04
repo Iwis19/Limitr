@@ -1,0 +1,38 @@
+<section class="page">
+  <header class="header">
+    <h2>Incidents</h2>
+    <label class="toggle">
+      <input type="checkbox" [checked]="activeOnly" (change)="activeOnly = !activeOnly; load()">
+      Active bans only
+    </label>
+  </header>
+
+  <div class="panel">
+    <div *ngIf="loading">Loading incidents...</div>
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Principal</th>
+          <th>Rule Triggered</th>
+          <th>Score</th>
+          <th>Action</th>
+          <th>Expires</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td>{{ row.timestamp | date:'medium' }}</td>
+          <td>{{ row.principalId }}</td>
+          <td>{{ row.ruleTriggered }}</td>
+          <td>{{ row.score }}</td>
+          <td>{{ row.actionTaken }}</td>
+          <td>{{ row.expiresAt ? (row.expiresAt | date:'medium') : '-' }}</td>
+        </tr>
+        <tr *ngIf="rows.length === 0">
+          <td colspan="6">No incidents found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

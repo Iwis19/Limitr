@@ -1,0 +1,55 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.panel {
+  border: 1px solid rgba(130, 148, 166, 0.2);
+  border-radius: 14px;
+  background: rgba(10, 20, 30, 0.6);
+  padding: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--text-muted);
+}
+
+input,
+button {
+  border-radius: 10px;
+  border: 1px solid rgba(130, 148, 166, 0.35);
+  background: rgba(10, 20, 30, 0.65);
+  color: var(--text-main);
+  padding: 0.6rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+form {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ok {
+  color: #66e9c3;
+}
+
+.error {
+  color: #ff8f8f;
+}

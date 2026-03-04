@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Sora:wght@500;700&display=swap');
+
+:root {
+  --bg: #0a131d;
+  --bg-grad: radial-gradient(circle at 15% 15%, #143149 0%, #0a131d 52%, #070d14 100%);
+  --text-main: #e8f1ff;
+  --text-muted: #93a9bf;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg-grad);
+  color: var(--text-main);
+  font-family: 'Manrope', sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Sora', sans-serif;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+.theme-dark {
+  --bg-grad: radial-gradient(circle at 80% 10%, #16303f 0%, #060b10 55%, #04070b 100%);
+}

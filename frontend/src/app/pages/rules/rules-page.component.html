@@ -1,0 +1,49 @@
+<section class="page">
+  <h2>Rule Configuration</h2>
+
+  <article class="panel">
+    <h3>Rate Limits + Thresholds</h3>
+    <form [formGroup]="ruleForm" (ngSubmit)="saveRules()" class="grid">
+      <label>Base limit/min
+        <input type="number" formControlName="baseLimitPerMinute">
+      </label>
+      <label>Throttled limit/min
+        <input type="number" formControlName="throttledLimitPerMinute">
+      </label>
+      <label>Warn threshold
+        <input type="number" formControlName="warnThreshold">
+      </label>
+      <label>Throttle threshold
+        <input type="number" formControlName="throttleThreshold">
+      </label>
+      <label>Ban threshold
+        <input type="number" formControlName="banThreshold">
+      </label>
+      <label>Ban duration (minutes)
+        <input type="number" formControlName="banMinutes">
+      </label>
+      <button type="submit">Save Rules</button>
+    </form>
+  </article>
+
+  <article class="panel split">
+    <div>
+      <h3>Manual Ban</h3>
+      <form [formGroup]="banForm" (ngSubmit)="banPrincipal()">
+        <input type="text" formControlName="principalId" placeholder="principalId">
+        <input type="number" formControlName="minutes" placeholder="minutes">
+        <button type="submit">Ban</button>
+      </form>
+    </div>
+    <div>
+      <h3>Manual Unban</h3>
+      <form [formGroup]="unbanForm" (ngSubmit)="unbanPrincipal()">
+        <input type="text" formControlName="principalId" placeholder="principalId">
+        <button type="submit">Unban</button>
+      </form>
+    </div>
+  </article>
+
+  <p class="ok" *ngIf="message">{{ message }}</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+</section>
