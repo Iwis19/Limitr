@@ -9,7 +9,7 @@ API protection and abuse-detection platform with a Spring Boot backend and Angul
 1. **API Key Protection + Rate Limiting**
    - `ApiProtectionFilter` guards `/api/**` routes with `X-API-KEY` authentication
    - Per-principal fixed-window rate limiting with response headers (`X-RateLimit-*`, `Retry-After`)
-   - Supports dynamic limits based on enforcement state (base vs throttled)
+   - Supports dynamic limits based on enforcement state
 2. **Abuse Detection Layer**
    - Scores principals from behavior signals (rate-limit abuse, failed auth, request spikes, resource enumeration)
    - Uses rolling time windows and cooldown logic to reduce noise
@@ -17,15 +17,15 @@ API protection and abuse-detection platform with a Spring Boot backend and Angul
 3. **Enforcement + Incident Handling**
    - Automatic state progression (`OK` → `WARN` → `THROTTLED` → `TEMP_BANNED`)
    - Temporary bans with expiration + manual ban/unban actions
-   - Incident logging with de-duplication to avoid repeated spam records
+   - Incident logging + avoid repeated spam records
 4. **Admin Dashboard Interface**
-   - Angular SPA with login, dashboard, logs, incidents, and rules pages
-   - Live admin actions for filtering logs, reviewing incidents, and managing principals
-   - Rule editing UI for thresholds, ban duration, and request limits
+   - Angular SPA 
+   - Live admin actions for filtering 
+   - Rule editing UI for thresholds
 5. **Auth + Persistence**
-   - JWT-based admin authentication for `/admin/**`
-   - Spring Data JPA persistence for users, clients, incidents, logs, and rule config
-   - PostgreSQL primary datastore with H2 profile support for local/dev usage
+   - JWT-based admin authentication 
+   - Spring Data JPA persistence 
+   - PostgreSQL primary datastore with H2 profile support
 
 ---
 
