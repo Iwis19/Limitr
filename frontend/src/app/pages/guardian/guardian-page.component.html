@@ -1,0 +1,171 @@
+<div class="guardian-root">
+  <div class="scanlines"></div>
+
+  <main class="main-view">
+    <section class="panel controls-column">
+      <div class="panel-header">
+        <h2 class="panel-title pixel-type">THRESHOLDS</h2>
+        <button type="button" class="view-all" (click)="refresh()">REFRESH</button>
+      </div>
+
+      <p class="panel-note profile-note">Profile controls for traffic analysis only.</p>
+      <p class="panel-note" *ngIf="lastUpdated">Last synced: {{ lastUpdated | date:'mediumTime' }}</p>
+
+      <div class="control-group">
+        <span class="control-label">VOLUME BASELINE (REQ/M)</span>
+        <div class="range-wrapper">
+          <div class="range-track"></div>
+          <div class="range-fill" [style.width]="rangeFillWidth(rateLimitPercent)"></div>
+          <div class="range-thumb" [style.left]="rangeThumbLeft(rateLimitPercent)"></div>
+          <input
+            type="range"
+            min="1"
+            max="5000"
+            [value]="rateLimit"
+            (input)="setRateLimit($event)"
+            class="range-input"
+            aria-label="Request rate limit"
+          />
+        </div>
+        <div class="range-caption">
+          <span>1</span>
+          <span class="pixel-type value">{{ formattedRateLimit }}</span>
+          <span>5K</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">ALERT SENSITIVITY (%)</span>
+        <div class="range-wrapper">
+          <div class="range-track"></div>
+          <div class="range-fill" [style.width]="rangeFillWidth(burstTolerancePercent)"></div>
+          <div class="range-thumb" [style.left]="rangeThumbLeft(burstTolerancePercent)"></div>
+          <input
+            type="range"
+            min="1"
+            max="100"
+            [value]="burstTolerance"
+            (input)="setBurstTolerance($event)"
+            class="range-input"
+            aria-label="Burst tolerance"
+          />
+        </div>
+        <div class="range-caption">
+          <span>1%</span>
+          <span class="pixel-type value">{{ burstTolerance | number:'1.0-0' }}%</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="control-group">
+        <span class="control-label">PROTECTION LAYERS</span>
+        <div class="toggle-row" *ngFor="let layer of protectionLayers; let i = index">
+          <span>{{ layer.label }}</span>
+          <button
+            type="button"
+            class="toggle-switch"
+            [class.active]="layer.active"
+            (click)="toggleLayer(i)"
+            [attr.aria-label]="layer.label"
+          ></button>
+        </div>
+      </div>
+
+      <p class="ok-message" *ngIf="message">{{ message }}</p>
+      <p class="error-message" *ngIf="error">{{ error }}</p>
+
+      <div class="panel-actions">
+        <button class="btn btn-secondary" (click)="resetConfig()">Reset</button>
+        <button class="btn btn-primary" [disabled]="applying || loading" (click)="applyConfig()">
+          {{ applying ? 'Saving...' : 'Save Profile' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="panel viz-column">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">TOTAL REQ/M</span>
+          <span class="kpi-value pixel-type">{{ totalReqPerMinute | number:'1.0-0' }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">BLOCKED (403/429)</span>
+          <span class="kpi-value pixel-type kpi-accent">{{ blockedCount }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">AVG LATENCY</span>
+          <span class="kpi-value pixel-type">{{ averageLatencyMs }}ms</span>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="polar-grid">
+          <div class="axis-line"></div>
+          <div class="axis-line axis-y"></div>
+          <div class="axis-line axis-d1"></div>
+          <div class="axis-line axis-d2"></div>
+
+          <div
+            class="data-blob"
+            [style.width.px]="blobSizePx"
+            [style.height.px]="blobSizePx"
+            [style.opacity]="blobOpacity"
+            [style.transform]="'scale(' + blobScale + ')'"
+            [style.animationDuration.s]="blobAnimationSeconds"
+            [style.borderRadius]="blobBorderRadius"
+          ></div>
+
+          <div class="axis-label axis-top pixel-type">VOL</div>
+          <div class="axis-label axis-bottom pixel-type">ERR</div>
+          <div class="axis-label axis-left pixel-type">LAT</div>
+          <div class="axis-label axis-right pixel-type">BOT</div>
+
+          <div class="dot-marker marker-1" [style.top]="marker1Top" [style.left]="marker1Left"></div>
+          <div class="dot-marker marker-2" [style.bottom]="marker2Bottom" [style.right]="marker2Right"></div>
+        </div>
+      </div>
+
+      <div class="legend-row">
+        <div class="legend-item">
+          <div class="legend-dot legend-dot-outline"></div>
+          <span>LIVE ANOMALY SHAPE</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot legend-dot-muted"></div>
+          <span>BASELINE GRID</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title pixel-type">RECENT INCIDENTS</h2>
+        <a routerLink="/incidents" class="view-all">VIEW ALL</a>
+      </div>
+
+      <div class="incident-list">
+        <div class="incident-item" *ngFor="let incident of displayIncidents">
+          <div class="incident-meta">
+            <span class="incident-ip">{{ incident.principalId }}</span>
+            <span class="incident-time">{{ incident.timestamp | date:'short' }}</span>
+          </div>
+          <div class="status-badge" [class.status-blocked]="incident.actionTaken !== 'WARN'" [class.status-flagged]="incident.actionTaken === 'WARN'">
+            {{ incident.ruleTriggered }}
+          </div>
+        </div>
+        <div class="incident-item" *ngIf="displayIncidents.length === 0">
+          <div class="incident-meta">
+            <span class="incident-ip">No incidents yet</span>
+            <span class="incident-time">Traffic is currently clean.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-actions">
+        <button class="btn btn-secondary" (click)="exportLog()">Export Log</button>
+      </div>
+    </section>
+  </main>
+</div>
