@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-md);
 }
 
 .header {
@@ -9,36 +9,48 @@
   align-items: center;
 }
 
+.header h2,
+.panel h3 {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
 .header button {
-  border: 1px solid rgba(130, 148, 166, 0.45);
-  background: transparent;
-  color: var(--text-main);
-  border-radius: 10px;
-  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  border-radius: var(--radius-pill);
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
 }
 
 .cards {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-sm);
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .card,
 .panel {
-  border: 1px solid rgba(130, 148, 166, 0.2);
-  background: rgba(10, 20, 30, 0.6);
-  border-radius: 14px;
-  padding: 1rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
 }
 
 .card p {
   margin: 0;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
 }
 
 .card h3 {
-  margin: 0.45rem 0 0;
-  font-size: 1.4rem;
+  margin: 0.5rem 0 0;
+  font-size: 1.6rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
 }
 
 table {
@@ -49,6 +61,6 @@ table {
 th,
 td {
   text-align: left;
-  padding: 0.6rem 0.4rem;
-  border-bottom: 1px solid rgba(130, 148, 166, 0.15);
+  padding: 0.7rem 0.4rem;
+  border-bottom: 1px solid var(--border-subtle);
 }

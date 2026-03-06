@@ -3,6 +3,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
+interface TopNavItem {
+  label: string;
+  route: string;
+  exact?: boolean;
+}
+
 @Component({
   selector: 'app-shell',
   standalone: true,
@@ -12,6 +18,13 @@ import { AuthService } from '../services/auth.service';
 })
 export class ShellComponent implements OnInit {
   darkMode = localStorage.getItem('limitr_dark') === '1';
+  readonly topNav: TopNavItem[] = [
+    { label: 'OVERVIEW', route: '/dashboard' },
+    { label: 'TRAFFIC', route: '/guardian' },
+    { label: 'RULES', route: '/rules' },
+    { label: 'LOGS', route: '/logs' },
+    { label: 'INCIDENTS', route: '/incidents' }
+  ];
 
   constructor(
     private authService: AuthService,

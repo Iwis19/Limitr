@@ -1,13 +1,20 @@
 .page {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-md);
+}
+
+h2,
+h3 {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 .panel {
-  border: 1px solid rgba(130, 148, 166, 0.2);
-  border-radius: 14px;
-  background: rgba(10, 20, 30, 0.6);
-  padding: 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+  padding: var(--space-md);
 }
 
 .grid {
@@ -19,20 +26,21 @@
 label {
   display: grid;
   gap: 0.45rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 input,
 button {
-  border-radius: 10px;
-  border: 1px solid rgba(130, 148, 166, 0.35);
-  background: rgba(10, 20, 30, 0.65);
-  color: var(--text-main);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-body);
+  color: var(--text-primary);
   padding: 0.6rem;
 }
 
 button {
   cursor: pointer;
+  background: rgba(255, 214, 206, 0.15);
 }
 
 .split {
@@ -47,9 +55,9 @@ form {
 }
 
 .ok {
-  color: #66e9c3;
+  color: var(--accent-primary);
 }
 
 .error {
-  color: #ff8f8f;
+  color: #ffb1a7;
 }

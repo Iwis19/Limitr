@@ -1,29 +1,40 @@
 <div class="shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo"></div>
-      <div>
-        <h1>Limitr</h1>
-        <p>Security Console</p>
-      </div>
-    </div>
-
-    <nav class="nav">
-      <a routerLink="/dashboard" routerLinkActive="active">Overview</a>
-      <a routerLink="/logs" routerLinkActive="active">Logs</a>
-      <a routerLink="/incidents" routerLinkActive="active">Incidents</a>
-      <a routerLink="/rules" routerLinkActive="active">Rules</a>
-    </nav>
-
-    <div class="actions">
-      <button type="button" (click)="toggleTheme()">
-        {{ darkMode ? 'Light Mode' : 'Dark Mode' }}
-      </button>
-      <button type="button" class="danger" (click)="logout()">Sign Out</button>
-    </div>
-  </aside>
-
   <main class="content">
-    <router-outlet></router-outlet>
+    <header class="content-header">
+      <div class="header-left">
+        <div class="brand-dot"></div>
+        <div class="brand-copy">
+          <h1 class="pixel-type">LIMITR_CONSOLE</h1>
+          <p>Realtime protection workspace</p>
+        </div>
+      </div>
+
+      <nav class="top-nav-pills">
+        <a
+          *ngFor="let item of topNav"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="top-nav-item"
+        >
+          {{ item.label }}
+        </a>
+      </nav>
+
+      <div class="header-right">
+        <div class="top-status pixel-type">
+          <div class="status-dot"></div>
+          SYSTEM OPERATIONAL
+        </div>
+        <button type="button" class="header-btn" (click)="toggleTheme()">
+          {{ darkMode ? 'Light Mode' : 'Dark Mode' }}
+        </button>
+        <button type="button" class="header-btn danger" (click)="logout()">Sign Out</button>
+      </div>
+    </header>
+
+    <section class="content-body">
+      <router-outlet></router-outlet>
+    </section>
   </main>
 </div>

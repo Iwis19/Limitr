@@ -1,8 +1,8 @@
 <section class="page">
-  <h2>Rule Configuration</h2>
+  <h2 class="pixel-type">Rule Configuration</h2>
 
   <article class="panel">
-    <h3>Rate Limits + Thresholds</h3>
+    <h3 class="pixel-type">Rate Limits + Thresholds</h3>
     <form [formGroup]="ruleForm" (ngSubmit)="saveRules()" class="grid">
       <label>Base limit/min
         <input type="number" formControlName="baseLimitPerMinute">
@@ -28,7 +28,7 @@
 
   <article class="panel split">
     <div>
-      <h3>Manual Ban</h3>
+      <h3 class="pixel-type">Manual Ban</h3>
       <form [formGroup]="banForm" (ngSubmit)="banPrincipal()">
         <input type="text" formControlName="principalId" placeholder="principalId">
         <input type="number" formControlName="minutes" placeholder="minutes">
@@ -36,7 +36,7 @@
       </form>
     </div>
     <div>
-      <h3>Manual Unban</h3>
+      <h3 class="pixel-type">Manual Unban</h3>
       <form [formGroup]="unbanForm" (ngSubmit)="unbanPrincipal()">
         <input type="text" formControlName="principalId" placeholder="principalId">
         <button type="submit">Unban</button>
