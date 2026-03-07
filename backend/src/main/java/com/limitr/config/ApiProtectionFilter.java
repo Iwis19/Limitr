@@ -1,5 +1,14 @@
 package com.limitr.config;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limitr.domain.ApiClient;
 import com.limitr.domain.RuleConfig;
@@ -10,17 +19,11 @@ import com.limitr.service.EnforcementService;
 import com.limitr.service.RateLimitService;
 import com.limitr.service.RequestLogService;
 import com.limitr.service.RuleService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class ApiProtectionFilter extends OncePerRequestFilter {
