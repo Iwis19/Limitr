@@ -55,8 +55,6 @@ Most of the development began locally since the summer, but more implementations
 - **Maven**
 
 ### 1. Start PostgreSQL
-From the repository root:
-
 ```powershell
 docker compose up -d postgres
 ```
@@ -67,8 +65,6 @@ Default database values:
 - password: `postgres`
 
 ### 2. Start the backend
-From `backend/`:
-
 ```powershell
 mvn spring-boot:run
 ```
@@ -76,8 +72,6 @@ Backend URL:
 - `http://localhost:8080`
 
 ### 3. Start the frontend
-From `frontend/`:
-
 ```powershell
 npm install
 npm start
@@ -96,7 +90,6 @@ Demo API client:
 
 ### Optional H2 mode
 If you want to run the backend without PostgreSQL:
-
 ```powershell
 mvn spring-boot:run "-Dspring-boot.run.profiles=h2"
 ```
