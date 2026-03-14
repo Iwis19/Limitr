@@ -40,14 +40,20 @@ public class AuthService {
     }
 
     public String login(String username, String password) {
-        AdminUser user = adminUserRepository.findByUsername(username)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials."));
+        AdminUser user = adminUserRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            throw invalidCredentials(username);
+        }
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            abuseDetectionService.recordFailedAuthAttempt("admin:" + username);
-            throw new IllegalArgumentException("Invalid credentials.");
+            throw invalidCredentials(username);
         }
 
         return jwtService.generateToken(user.getUsername());
+    }
+
+    private IllegalArgumentException invalidCredentials(String username) {
+        abuseDetectionService.recordFailedAuthAttempt("admin:" + username);
+        return new IllegalArgumentException("Invalid credentials.");
     }
 }
