@@ -39,6 +39,14 @@ public class RequestLogService {
         return requestLogRepository.countByTimestampAfter(Instant.now().minusSeconds(60));
     }
 
+    public long serverErrorsLastHour() {
+        Instant oneHourAgo = Instant.now().minusSeconds(3600);
+        return requestLogRepository.findTop200ByOrderByTimestampDesc().stream()
+            .filter(log -> log.getTimestamp() != null && log.getTimestamp().isAfter(oneHourAgo))
+            .filter(log -> log.getStatusCode() != null && log.getStatusCode() >= 500)
+            .count();
+    }
+
     public List<RequestLog> findRecent(String principalId, Integer statusCode) {
         if (principalId != null && !principalId.isBlank()) {
             return requestLogRepository.findTop200ByPrincipalIdOrderByTimestampDesc(principalId);

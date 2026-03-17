@@ -46,6 +46,8 @@ public class AdminController {
     @GetMapping("/stats")
     public Map<String, Object> stats() {
         Instant oneHourAgo = Instant.now().minusSeconds(3600);
+        long activeBans = enforcementService.activeBanCount();
+        long serverErrorsLastHour = requestLogService.serverErrorsLastHour();
         List<Map<String, Object>> topOffenders = incidentRepository.findTopOffenders(oneHourAgo)
             .stream()
             .limit(5)
@@ -57,9 +59,10 @@ public class AdminController {
 
         return Map.of(
             "requestsPerMinute", requestLogService.requestsPerMinute(),
-            "activeBans", enforcementService.activeBanCount(),
+            "activeBans", activeBans,
             "topOffenders", topOffenders,
-            "rules", ruleService.getCurrentRule()
+            "rules", ruleService.getCurrentRule(),
+            "systemStatus", buildSystemStatus(activeBans, serverErrorsLastHour)
         );
     }
 
@@ -106,5 +109,35 @@ public class AdminController {
             "message", "Principal unbanned.",
             "principalId", principalId
         ));
+    }
+
+    private Map<String, Object> buildSystemStatus(long activeBans, long serverErrorsLastHour) {
+        if (serverErrorsLastHour >= 3) {
+            return Map.of(
+                "level", "degraded",
+                "label", "System Degraded",
+                "detail", "Multiple 5xx responses were logged in the last hour.",
+                "serverErrorsLastHour", serverErrorsLastHour,
+                "activeBans", activeBans
+            );
+        }
+
+        if (activeBans > 0) {
+            return Map.of(
+                "level", "warning",
+                "label", "Protective Actions Active",
+                "detail", "Temporary bans are currently active.",
+                "serverErrorsLastHour", serverErrorsLastHour,
+                "activeBans", activeBans
+            );
+        }
+
+        return Map.of(
+            "level", "operational",
+            "label", "System Operational",
+            "detail", "No recent server errors and no active bans.",
+            "serverErrorsLastHour", serverErrorsLastHour,
+            "activeBans", activeBans
+        );
     }
 }
