@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { AdminApiService } from '../../services/admin-api.service';
-import { AdminStats } from '../../services/admin-api.types';
+import { AdminStats, SystemStatus } from '../../services/admin-api.types';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -15,6 +15,10 @@ export class DashboardPageComponent implements OnInit {
   stats: AdminStats | null = null;
 
   constructor(private adminApiService: AdminApiService) {}
+
+  get systemStatus(): SystemStatus | null {
+    return this.stats?.systemStatus ?? null;
+  }
 
   ngOnInit(): void {
     this.refresh();

@@ -13,11 +13,22 @@ export interface TopOffender {
   incidents: number;
 }
 
+export type SystemStatusLevel = 'operational' | 'warning' | 'degraded';
+
+export interface SystemStatus {
+  level: SystemStatusLevel;
+  label: string;
+  detail: string;
+  serverErrorsLastHour: number;
+  activeBans: number;
+}
+
 export interface AdminStats {
   requestsPerMinute: number;
   activeBans: number;
   topOffenders: TopOffender[];
   rules: RuleConfig;
+  systemStatus: SystemStatus;
 }
 
 export interface RequestLogItem {
