@@ -6,6 +6,35 @@
 
   <div class="loading" *ngIf="loading">Loading metrics...</div>
 
+  <article class="status-panel panel" *ngIf="!loading && systemStatus as status">
+    <div class="status-panel__header">
+      <div>
+        <p class="status-panel__eyebrow pixel-type">System Status</p>
+        <h3>{{ status.label }}</h3>
+      </div>
+      <span
+        class="status-chip"
+        [class.status-chip--operational]="status.level === 'operational'"
+        [class.status-chip--warning]="status.level === 'warning'"
+        [class.status-chip--degraded]="status.level === 'degraded'">
+        {{ status.level }}
+      </span>
+    </div>
+
+    <p class="status-panel__detail">{{ status.detail }}</p>
+
+    <div class="status-panel__metrics">
+      <div>
+        <span>5xx Last Hour</span>
+        <strong>{{ status.serverErrorsLastHour }}</strong>
+      </div>
+      <div>
+        <span>Active Bans</span>
+        <strong>{{ status.activeBans }}</strong>
+      </div>
+    </div>
+  </article>
+
   <div class="cards" *ngIf="!loading && stats">
     <article class="card">
       <p>Requests / Minute</p>
