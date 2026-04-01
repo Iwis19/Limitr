@@ -63,4 +63,19 @@ class SecurityConfigIntegrationTest {
                 .header("Authorization", "Bearer " + accessToken)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void registerEndpointIsClosedAfterBootstrapAdminExists() throws Exception {
+        mockMvc.perform(
+            post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username": "new-admin",
+                      "password": "password123"
+                    }
+                    """)
+        ).andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.error").value("Admin registration is closed."));
+    }
 }

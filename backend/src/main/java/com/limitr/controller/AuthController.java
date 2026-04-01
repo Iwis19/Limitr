@@ -28,6 +28,8 @@ public class AuthController {
         try {
             authService.register(request.username(), request.password());
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Admin user registered."));
+        } catch (IllegalStateException exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", exception.getMessage()));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
         }

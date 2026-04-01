@@ -2,6 +2,9 @@ package com.limitr.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.limitr.domain.AdminUser;
@@ -70,6 +73,32 @@ class AuthServiceTest {
 
         assertEquals("jwt-token", token);
         assertEquals(List.of(), abuseDetectionService.failedAttempts);
+    }
+
+    @Test
+    void registerCreatesFirstAdminDuringBootstrap() {
+        when(adminUserRepository.count()).thenReturn(0L);
+        when(adminUserRepository.findByUsername("first-admin")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+
+        authService.register("first-admin", "password123");
+
+        verify(adminUserRepository).save(any(AdminUser.class));
+    }
+
+    @Test
+    void registerIsClosedOnceAnAdminAlreadyExists() {
+        when(adminUserRepository.count()).thenReturn(1L);
+
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> authService.register("second-admin", "password123")
+        );
+
+        assertEquals("Admin registration is closed.", exception.getMessage());
+        verify(adminUserRepository, never()).findByUsername(any());
+        verify(adminUserRepository, never()).save(any(AdminUser.class));
+        verify(passwordEncoder, never()).encode(any());
     }
 
     private static class TestJwtService extends JwtService {

@@ -28,6 +28,10 @@ public class AuthService {
 
     @Transactional
     public void register(String username, String password) {
+        if (adminUserRepository.count() > 0) {
+            throw new IllegalStateException("Admin registration is closed.");
+        }
+
         if (adminUserRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username is already registered.");
         }
