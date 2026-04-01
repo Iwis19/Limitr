@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.limitr.config.AuthProperties;
+import com.limitr.config.RegistrationMode;
 import com.limitr.domain.AdminUser;
 import com.limitr.repository.AdminUserRepository;
 import java.util.ArrayList;
@@ -21,12 +23,14 @@ class AuthServiceTest {
     private final PasswordEncoder passwordEncoder = org.mockito.Mockito.mock(PasswordEncoder.class);
     private final TestJwtService jwtService = new TestJwtService();
     private final RecordingAbuseDetectionService abuseDetectionService = new RecordingAbuseDetectionService();
+    private final AuthProperties authProperties = authProperties(RegistrationMode.BOOTSTRAP);
 
     private final AuthService authService = new AuthService(
         adminUserRepository,
         passwordEncoder,
         jwtService,
-        abuseDetectionService
+        abuseDetectionService,
+        authProperties
     );
 
     @Test
@@ -77,6 +81,7 @@ class AuthServiceTest {
 
     @Test
     void registerCreatesFirstAdminDuringBootstrap() {
+        authProperties.setRegistrationMode(RegistrationMode.BOOTSTRAP);
         when(adminUserRepository.count()).thenReturn(0L);
         when(adminUserRepository.findByUsername("first-admin")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
@@ -88,6 +93,7 @@ class AuthServiceTest {
 
     @Test
     void registerIsClosedOnceAnAdminAlreadyExists() {
+        authProperties.setRegistrationMode(RegistrationMode.BOOTSTRAP);
         when(adminUserRepository.count()).thenReturn(1L);
 
         IllegalStateException exception = assertThrows(
@@ -99,6 +105,28 @@ class AuthServiceTest {
         verify(adminUserRepository, never()).findByUsername(any());
         verify(adminUserRepository, never()).save(any(AdminUser.class));
         verify(passwordEncoder, never()).encode(any());
+    }
+
+    @Test
+    void registerIsDisabledWhenRegistrationModeIsDisabled() {
+        authProperties.setRegistrationMode(RegistrationMode.DISABLED);
+
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> authService.register("bootstrap-admin", "password123")
+        );
+
+        assertEquals("Admin registration is disabled.", exception.getMessage());
+        verify(adminUserRepository, never()).count();
+        verify(adminUserRepository, never()).findByUsername(any());
+        verify(adminUserRepository, never()).save(any(AdminUser.class));
+        verify(passwordEncoder, never()).encode(any());
+    }
+
+    private static AuthProperties authProperties(RegistrationMode registrationMode) {
+        AuthProperties authProperties = new AuthProperties();
+        authProperties.setRegistrationMode(registrationMode);
+        return authProperties;
     }
 
     private static class TestJwtService extends JwtService {
