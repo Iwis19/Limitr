@@ -107,9 +107,22 @@ class AdminControllerTest {
         assertEquals("password123", authService.createdPassword);
     }
 
+    @Test
+    void createAdminUserReturnsBadRequestWhenUsernameAlreadyExists() {
+        RecordingAuthService authService = new RecordingAuthService();
+        authService.throwDuplicate = true;
+        AdminController controller = new AdminController(null, null, null, null, authService);
+
+        ResponseEntity<?> response = controller.createAdminUser(new AdminUserCreateRequest("admin", "password123"));
+
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals(Map.of("error", "Username is already registered."), response.getBody());
+    }
+
     private static final class RecordingAuthService extends AuthService {
         private String createdUsername;
         private String createdPassword;
+        private boolean throwDuplicate;
 
         private RecordingAuthService() {
             super(null, null, null, null, new AuthProperties());
@@ -117,6 +130,9 @@ class AdminControllerTest {
 
         @Override
         public void createAdminUser(String username, String password) {
+            if (throwDuplicate) {
+                throw new IllegalArgumentException("Username is already registered.");
+            }
             createdUsername = username;
             createdPassword = password;
         }

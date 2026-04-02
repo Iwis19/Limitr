@@ -93,6 +93,12 @@ These values come from the `SEED_ADMIN_USERNAME`, `SEED_ADMIN_PASSWORD`,
 backend seeds them for local use and only logs the non-sensitive admin
 username at startup.
 
+### Admin registration lifecycle
+- Public `POST /auth/register` is intended for bootstrap only. In the default `bootstrap` mode it works only until the first admin exists, then it returns `403`.
+- Set `AUTH_REGISTRATION_MODE=disabled` to turn off public registration entirely.
+- After bootstrap, create additional admins through authenticated `POST /admin/users` requests from an existing admin session.
+- Typical production flow: seed or provision the first admin, set `AUTH_REGISTRATION_MODE=disabled`, then manage future admins through the protected admin endpoint.
+
 ### Optional H2 mode
 If you want to run the backend without PostgreSQL:
 ```powershell

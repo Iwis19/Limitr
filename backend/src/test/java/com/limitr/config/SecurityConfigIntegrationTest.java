@@ -80,6 +80,20 @@ class SecurityConfigIntegrationTest {
     }
 
     @Test
+    void adminUserProvisioningEndpointRequiresJwt() throws Exception {
+        mockMvc.perform(
+            post("/admin/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username": "ops-admin",
+                      "password": "password123"
+                    }
+                    """)
+        ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void seededAdminCanCreateAnotherAdminThroughAdminEndpoint() throws Exception {
         String accessToken = login("admin", "admin12345");
 
@@ -107,6 +121,24 @@ class SecurityConfigIntegrationTest {
                     """)
         ).andExpect(status().isOk())
             .andExpect(jsonPath("$.accessToken").isString());
+    }
+
+    @Test
+    void adminUserProvisioningReturnsBadRequestForDuplicateUsername() throws Exception {
+        String accessToken = login("admin", "admin12345");
+
+        mockMvc.perform(
+            post("/admin/users")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username": "admin",
+                      "password": "password123"
+                    }
+                    """)
+        ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Username is already registered."));
     }
 
     private String login(String username, String password) throws Exception {
