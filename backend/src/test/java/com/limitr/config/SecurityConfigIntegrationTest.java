@@ -1,7 +1,7 @@
 package com.limitr.config;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -77,5 +77,53 @@ class SecurityConfigIntegrationTest {
                     """)
         ).andExpect(status().isForbidden())
             .andExpect(jsonPath("$.error").value("Admin registration is closed."));
+    }
+
+    @Test
+    void seededAdminCanCreateAnotherAdminThroughAdminEndpoint() throws Exception {
+        String accessToken = login("admin", "admin12345");
+
+        mockMvc.perform(
+            post("/admin/users")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username": "ops-admin",
+                      "password": "password123"
+                    }
+                    """)
+        ).andExpect(status().isCreated())
+            .andExpect(jsonPath("$.username").value("ops-admin"));
+
+        mockMvc.perform(
+            post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username": "ops-admin",
+                      "password": "password123"
+                    }
+                    """)
+        ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.accessToken").isString());
+    }
+
+    private String login(String username, String password) throws Exception {
+        MvcResult loginResult = mockMvc.perform(
+            post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username": "%s",
+                      "password": "%s"
+                    }
+                    """.formatted(username, password))
+        ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.accessToken").isString())
+            .andReturn();
+
+        JsonNode loginPayload = objectMapper.readTree(loginResult.getResponse().getContentAsString());
+        return loginPayload.get("accessToken").asText();
     }
 }

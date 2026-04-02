@@ -3,9 +3,12 @@ package com.limitr.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.limitr.config.AuthProperties;
 import com.limitr.domain.Incident;
 import com.limitr.domain.RuleConfig;
+import com.limitr.dto.AdminUserCreateRequest;
 import com.limitr.repository.IncidentRepository;
+import com.limitr.service.AuthService;
 import com.limitr.service.EnforcementService;
 import com.limitr.service.RequestLogService;
 import com.limitr.service.RuleService;
@@ -15,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 
 class AdminControllerTest {
 
@@ -24,7 +28,8 @@ class AdminControllerTest {
             requestLogServiceStub(12, 0),
             incidentRepositoryWithTopOffenders(List.of()),
             ruleServiceStub(),
-            enforcementServiceStub(0)
+            enforcementServiceStub(0),
+            null
         );
 
         Map<String, Object> response = controller.stats();
@@ -38,7 +43,8 @@ class AdminControllerTest {
             requestLogServiceStub(12, 0),
             incidentRepositoryWithTopOffenders(List.of()),
             ruleServiceStub(),
-            enforcementServiceStub(2)
+            enforcementServiceStub(2),
+            null
         );
 
         Map<String, Object> response = controller.stats();
@@ -52,7 +58,8 @@ class AdminControllerTest {
             requestLogServiceStub(12, 3),
             incidentRepositoryWithTopOffenders(List.of()),
             ruleServiceStub(),
-            enforcementServiceStub(0)
+            enforcementServiceStub(0),
+            null
         );
 
         Map<String, Object> response = controller.stats();
@@ -64,7 +71,7 @@ class AdminControllerTest {
     void activeOnlyReturnsEmptyWhenThereAreNoPersistedActiveBans() {
         AtomicReference<Boolean> queriedActiveIncidents = new AtomicReference<>(false);
         IncidentRepository incidentRepository = incidentRepositoryProxy(queriedActiveIncidents, List.of());
-        AdminController controller = new AdminController(null, incidentRepository, null, null);
+        AdminController controller = new AdminController(null, incidentRepository, null, null, null);
 
         Map<String, Object> response = controller.incidents(true);
 
@@ -79,12 +86,40 @@ class AdminControllerTest {
 
         AtomicReference<Boolean> queriedActiveIncidents = new AtomicReference<>(false);
         IncidentRepository incidentRepository = incidentRepositoryProxy(queriedActiveIncidents, List.of(incident));
-        AdminController controller = new AdminController(null, incidentRepository, null, null);
+        AdminController controller = new AdminController(null, incidentRepository, null, null, null);
 
         Map<String, Object> response = controller.incidents(true);
 
         assertEquals(List.of(incident), response.get("items"));
         assertTrue(queriedActiveIncidents.get(), "incident repository should be queried for active bans");
+    }
+
+    @Test
+    void createAdminUserReturnsCreatedResponse() {
+        RecordingAuthService authService = new RecordingAuthService();
+        AdminController controller = new AdminController(null, null, null, null, authService);
+
+        ResponseEntity<?> response = controller.createAdminUser(new AdminUserCreateRequest("new-admin", "password123"));
+
+        assertEquals(201, response.getStatusCode().value());
+        assertEquals(Map.of("message", "Admin user created.", "username", "new-admin"), response.getBody());
+        assertEquals("new-admin", authService.createdUsername);
+        assertEquals("password123", authService.createdPassword);
+    }
+
+    private static final class RecordingAuthService extends AuthService {
+        private String createdUsername;
+        private String createdPassword;
+
+        private RecordingAuthService() {
+            super(null, null, null, null, new AuthProperties());
+        }
+
+        @Override
+        public void createAdminUser(String username, String password) {
+            createdUsername = username;
+            createdPassword = password;
+        }
     }
 
     private static void assertSystemStatus(Map<String, Object> response, String expectedLevel, String expectedLabel) {

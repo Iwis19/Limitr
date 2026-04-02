@@ -2,9 +2,11 @@ package com.limitr.controller;
 
 import com.limitr.domain.Incident;
 import com.limitr.domain.RuleConfig;
+import com.limitr.dto.AdminUserCreateRequest;
 import com.limitr.dto.ManualBanRequest;
 import com.limitr.dto.RulesUpdateRequest;
 import com.limitr.repository.IncidentRepository;
+import com.limitr.service.AuthService;
 import com.limitr.service.EnforcementService;
 import com.limitr.service.RequestLogService;
 import com.limitr.service.RuleService;
@@ -13,6 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,17 +33,20 @@ public class AdminController {
     private final IncidentRepository incidentRepository;
     private final RuleService ruleService;
     private final EnforcementService enforcementService;
+    private final AuthService authService;
 
     public AdminController(
         RequestLogService requestLogService,
         IncidentRepository incidentRepository,
         RuleService ruleService,
-        EnforcementService enforcementService
+        EnforcementService enforcementService,
+        AuthService authService
     ) {
         this.requestLogService = requestLogService;
         this.incidentRepository = incidentRepository;
         this.ruleService = ruleService;
         this.enforcementService = enforcementService;
+        this.authService = authService;
     }
 
     @GetMapping("/stats")
@@ -85,6 +91,19 @@ public class AdminController {
     @PutMapping("/rules")
     public RuleConfig updateRules(@Valid @RequestBody RulesUpdateRequest request) {
         return ruleService.update(request);
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<?> createAdminUser(@Valid @RequestBody AdminUserCreateRequest request) {
+        try {
+            authService.createAdminUser(request.username(), request.password());
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "Admin user created.",
+                "username", request.username()
+            ));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
+        }
     }
 
     @PostMapping("/actions/ban")

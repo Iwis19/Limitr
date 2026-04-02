@@ -41,6 +41,11 @@ public class AuthService {
             throw new IllegalStateException("Admin registration is closed.");
         }
 
+        createAdminUser(username, password);
+    }
+
+    @Transactional
+    public void createAdminUser(String username, String password) {
         if (adminUserRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username is already registered.");
         }

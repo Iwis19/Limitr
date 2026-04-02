@@ -123,6 +123,17 @@ class AuthServiceTest {
         verify(passwordEncoder, never()).encode(any());
     }
 
+    @Test
+    void createAdminUserAllowsProvisioningWhenPublicRegistrationIsDisabled() {
+        authProperties.setRegistrationMode(RegistrationMode.DISABLED);
+        when(adminUserRepository.findByUsername("managed-admin")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+
+        authService.createAdminUser("managed-admin", "password123");
+
+        verify(adminUserRepository).save(any(AdminUser.class));
+    }
+
     private static AuthProperties authProperties(RegistrationMode registrationMode) {
         AuthProperties authProperties = new AuthProperties();
         authProperties.setRegistrationMode(registrationMode);
