@@ -6,7 +6,7 @@ API protection and abuse-detection platform with a Spring Boot backend and Angul
 
 ## Repository Note
 
-Most of the development began locally since the summer, but more implementations in the future will be committed as soon as i finish each feature!
+Most of the development began locally since a while ago, still maintaining whenever i have time to
 
 ---
 
