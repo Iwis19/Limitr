@@ -24,6 +24,7 @@ app:
     secret: ${JWT_SECRET:limitr-local-secret-key-change-this-in-production-1234567890}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
   seed:
+    enabled: ${APP_SEED_ENABLED:false}
     admin:
       username: ${SEED_ADMIN_USERNAME:admin}
       password: ${SEED_ADMIN_PASSWORD:admin12345}

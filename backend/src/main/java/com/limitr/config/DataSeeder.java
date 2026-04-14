@@ -34,6 +34,9 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.seed.client.api-key:local-free-key}")
     private String seedApiKey;
 
+    @Value("${app.seed.enabled:false}")
+    private boolean seedEnabled;
+
     public DataSeeder(
         RuleService ruleService,
         AdminUserRepository adminUserRepository,
@@ -49,6 +52,11 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         ruleService.getCurrentRule();
+
+        if (!seedEnabled) {
+            log.info("Limitr seed data is disabled for this environment.");
+            return;
+        }
 
         if (adminUserRepository.findByUsername(seedAdminUsername).isEmpty()) {
             AdminUser user = new AdminUser();
