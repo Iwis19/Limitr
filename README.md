@@ -66,10 +66,16 @@ Default database values:
 
 ### 2. Start the backend
 ```powershell
+$env:JWT_SECRET="replace-with-a-long-random-secret-at-least-32-bytes"
 mvn spring-boot:run
 ```
 Backend URL:
 - `http://localhost:8080`
+
+Secure startup defaults:
+- `JWT_SECRET` is required for the standard backend startup path.
+- `APP_SEED_ENABLED` defaults to `false`, so no admin or API key is created unless you opt in.
+- `AUTH_REGISTRATION_MODE` defaults to `bootstrap`; switch it to `disabled` after your initial admin exists.
 
 ### 3. Start the frontend
 ```powershell
@@ -79,7 +85,7 @@ npm start
 Frontend URL:
 - `http://localhost:4200`
 
-### 4. Use the seeded local credentials
+### 4. Local bootstrap credentials
 Admin login:
 - username: `admin`
 - password: `admin12345`
@@ -90,8 +96,15 @@ Seeded API client:
 
 These values come from the `SEED_ADMIN_USERNAME`, `SEED_ADMIN_PASSWORD`,
 `SEED_CLIENT_PRINCIPAL_ID`, and `SEED_API_KEY` environment variables. The
-backend seeds them for local use and only logs the non-sensitive admin
-username at startup.
+backend only seeds them when `APP_SEED_ENABLED=true` or when you run with the
+`h2` profile. It only logs the non-sensitive admin username at startup.
+
+If you want seeded credentials while using PostgreSQL locally:
+```powershell
+$env:JWT_SECRET="replace-with-a-long-random-secret-at-least-32-bytes"
+$env:APP_SEED_ENABLED="true"
+mvn spring-boot:run
+```
 
 ### Admin registration lifecycle
 - Public `POST /auth/register` is intended for bootstrap only. In the default `bootstrap` mode it works only until the first admin exists, then it returns `403`.
@@ -104,6 +117,11 @@ If you want to run the backend without PostgreSQL:
 ```powershell
 mvn spring-boot:run "-Dspring-boot.run.profiles=h2"
 ```
+
+The `h2` profile is the quick local bootstrap path:
+- it enables seed data automatically
+- it allows the known local development JWT secret
+- it keeps the default admin and sample API key available for local testing
 
 ### Frontend production build
 ```powershell
