@@ -1,5 +1,6 @@
 package com.limitr.service;
 
+import com.limitr.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -7,17 +8,19 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret}")
-    private String secret;
+    private final SecretKey signingKey;
+    private final long expirationMinutes;
 
-    @Value("${app.jwt.expiration-minutes:120}")
-    private long expirationMinutes;
+    public JwtService(JwtProperties jwtProperties) {
+        validate(jwtProperties);
+        this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        this.expirationMinutes = jwtProperties.getExpirationMinutes();
+    }
 
     public String generateToken(String username) {
         Instant now = Instant.now();
@@ -25,7 +28,7 @@ public class JwtService {
             .subject(username)
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusSeconds(expirationMinutes * 60)))
-            .signWith(getSigningKey())
+            .signWith(signingKey)
             .compact();
     }
 
@@ -44,13 +47,27 @@ public class JwtService {
 
     private Claims parseClaims(String token) {
         return Jwts.parser()
-            .verifyWith(getSigningKey())
+            .verifyWith(signingKey)
             .build()
             .parseSignedClaims(token)
             .getPayload();
     }
 
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    private void validate(JwtProperties jwtProperties) {
+        String secret = jwtProperties.getSecret();
+        int secretLength = secret.getBytes(StandardCharsets.UTF_8).length;
+
+        if (secret.isBlank()) {
+            throw new IllegalStateException("app.jwt.secret must be configured.");
+        }
+
+        if (secretLength < 32) {
+            throw new IllegalStateException("app.jwt.secret must be at least 32 bytes long.");
+        }
+
+        if (!jwtProperties.isAllowInsecureSecret()
+            && JwtProperties.LOCAL_DEVELOPMENT_SECRET.equals(secret)) {
+            throw new IllegalStateException("Configure a unique app.jwt.secret for this environment.");
+        }
     }
 }

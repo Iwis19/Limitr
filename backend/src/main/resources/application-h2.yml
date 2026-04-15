@@ -8,5 +8,8 @@ spring:
     password:
 
 app:
+  jwt:
+    secret: limitr-local-secret-key-change-this-in-production-1234567890
+    allow-insecure-secret: true
   seed:
     enabled: true

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.limitr.config.AuthProperties;
+import com.limitr.config.JwtProperties;
 import com.limitr.config.RegistrationMode;
 import com.limitr.domain.AdminUser;
 import com.limitr.repository.AdminUserRepository;
@@ -142,9 +143,19 @@ class AuthServiceTest {
 
     private static class TestJwtService extends JwtService {
 
+        TestJwtService() {
+            super(jwtProperties());
+        }
+
         @Override
         public String generateToken(String username) {
             return "jwt-token";
+        }
+
+        private static JwtProperties jwtProperties() {
+            JwtProperties jwtProperties = new JwtProperties();
+            jwtProperties.setSecret("test-secret-key-for-auth-service-123");
+            return jwtProperties;
         }
     }
 

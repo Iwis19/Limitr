@@ -21,8 +21,9 @@ app:
   auth:
     registration-mode: ${AUTH_REGISTRATION_MODE:bootstrap}
   jwt:
-    secret: ${JWT_SECRET:limitr-local-secret-key-change-this-in-production-1234567890}
+    secret: ${JWT_SECRET:}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+    allow-insecure-secret: false
   seed:
     enabled: ${APP_SEED_ENABLED:false}
     admin:

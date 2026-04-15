@@ -14,7 +14,7 @@ class ApiExceptionHandlerTest {
 
     private final MockMvc mockMvc = MockMvcBuilders
         .standaloneSetup(
-            new AdminController(null, null, null, null),
+            new AdminController(null, null, null, null, null),
             new SampleApiController()
         )
         .setControllerAdvice(new ApiExceptionHandler())
