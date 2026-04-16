@@ -7,9 +7,7 @@ import com.limitr.repository.IncidentRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,17 +18,12 @@ public class EnforcementService {
     private final AbuseDetectionService abuseDetectionService;
     private final IncidentRepository incidentRepository;
 
-    private final Map<String, Instant> temporaryBans = new ConcurrentHashMap<>();
-    private final Map<String, EnforcementState> lastState = new ConcurrentHashMap<>();
-    private final Map<String, Instant> lastIncidentTime = new ConcurrentHashMap<>();
-
     public EnforcementService(AbuseDetectionService abuseDetectionService, IncidentRepository incidentRepository) {
         this.abuseDetectionService = abuseDetectionService;
         this.incidentRepository = incidentRepository;
     }
 
     public EnforcementState evaluate(String principalId, RuleConfig ruleConfig) {
-        clearExpiredBan(principalId);
         if (isTempBanned(principalId)) {
             return EnforcementState.TEMP_BANNED;
         }
@@ -40,23 +33,21 @@ public class EnforcementService {
 
         if (score >= ruleConfig.getBanThreshold()) {
             Instant expiresAt = Instant.now().plus(Duration.ofMinutes(ruleConfig.getBanMinutes()));
-            temporaryBans.put(principalId, expiresAt);
             state = EnforcementState.TEMP_BANNED;
-            logIncident(principalId, "BAN_THRESHOLD", score, "TEMP_BANNED", expiresAt, state);
+            logIncident(principalId, "BAN_THRESHOLD", score, "TEMP_BANNED", expiresAt);
             return state;
         }
         if (score >= ruleConfig.getThrottleThreshold()) {
             state = EnforcementState.THROTTLED;
-            logIncident(principalId, "THROTTLE_THRESHOLD", score, "THROTTLED", null, state);
+            logIncident(principalId, "THROTTLE_THRESHOLD", score, "THROTTLED", null);
             return state;
         }
         if (score >= ruleConfig.getWarnThreshold()) {
             state = EnforcementState.WARN;
-            logIncident(principalId, "WARN_THRESHOLD", score, "WARN", null, state);
+            logIncident(principalId, "WARN_THRESHOLD", score, "WARN", null);
             return state;
         }
 
-        lastState.put(principalId, EnforcementState.OK);
         return state;
     }
 
@@ -65,12 +56,11 @@ public class EnforcementService {
     }
 
     public void recordRateLimitIncident(String principalId, int score) {
-        logIncident(principalId, "RATE_LIMIT_EXCEEDED", score, "WARN", null, EnforcementState.WARN);
+        logIncident(principalId, "RATE_LIMIT_EXCEEDED", score, "WARN", null);
     }
 
     public void banManually(String principalId, int minutes) {
         Instant expiresAt = Instant.now().plus(Duration.ofMinutes(minutes));
-        temporaryBans.put(principalId, expiresAt);
         Incident incident = new Incident();
         incident.setPrincipalId(principalId);
         incident.setRuleTriggered("MANUAL_BAN");
@@ -78,11 +68,9 @@ public class EnforcementService {
         incident.setActionTaken("TEMP_BANNED");
         incident.setExpiresAt(expiresAt);
         incidentRepository.save(incident);
-        lastState.put(principalId, EnforcementState.TEMP_BANNED);
     }
 
     public void unban(String principalId) {
-        temporaryBans.remove(principalId);
         Incident incident = new Incident();
         incident.setPrincipalId(principalId);
         incident.setRuleTriggered("MANUAL_UNBAN");
@@ -90,7 +78,6 @@ public class EnforcementService {
         incident.setActionTaken("UNBANNED");
         incident.setExpiresAt(null);
         incidentRepository.save(incident);
-        lastState.put(principalId, EnforcementState.OK);
     }
 
     public long activeBanCount() {
@@ -99,32 +86,16 @@ public class EnforcementService {
 
     public Map<String, Instant> getActiveBans() {
         Instant now = Instant.now();
-        temporaryBans.entrySet().removeIf(entry -> entry.getValue().isBefore(now));
         Map<String, Instant> activeBans = new LinkedHashMap<>();
         for (Incident incident : incidentRepository.findActiveBanStates(now)) {
             if (incident.getExpiresAt() != null) {
                 activeBans.put(incident.getPrincipalId(), incident.getExpiresAt());
             }
         }
-        activeBans.putAll(new HashMap<>(temporaryBans));
         return activeBans;
     }
 
-    private void clearExpiredBan(String principalId) {
-        Instant expiresAt = temporaryBans.get(principalId);
-        if (expiresAt != null && expiresAt.isBefore(Instant.now())) {
-            temporaryBans.remove(principalId);
-        }
-    }
-
     private Instant getBanExpiry(String principalId) {
-        clearExpiredBan(principalId);
-
-        Instant inMemoryExpiry = temporaryBans.get(principalId);
-        if (inMemoryExpiry != null) {
-            return inMemoryExpiry;
-        }
-
         return incidentRepository.findTopByPrincipalIdOrderByTimestampDesc(principalId)
             .filter(incident -> "TEMP_BANNED".equals(incident.getActionTaken()))
             .map(Incident::getExpiresAt)
@@ -137,15 +108,11 @@ public class EnforcementService {
         String ruleTriggered,
         int score,
         String actionTaken,
-        Instant expiresAt,
-        EnforcementState currentState
+        Instant expiresAt
     ) {
         Instant now = Instant.now();
-        EnforcementState previousState = lastState.get(principalId);
-        Instant previousIncident = lastIncidentTime.get(principalId);
-        boolean recentlyLogged = previousIncident != null && previousIncident.isAfter(now.minus(INCIDENT_DEDUP_WINDOW));
 
-        if (currentState == previousState && recentlyLogged) {
+        if (hasRecentlyLoggedSameAction(principalId, actionTaken, now)) {
             return;
         }
 
@@ -156,7 +123,13 @@ public class EnforcementService {
         incident.setActionTaken(actionTaken);
         incident.setExpiresAt(expiresAt);
         incidentRepository.save(incident);
-        lastState.put(principalId, currentState);
-        lastIncidentTime.put(principalId, now);
+    }
+
+    private boolean hasRecentlyLoggedSameAction(String principalId, String actionTaken, Instant now) {
+        return incidentRepository.findTopByPrincipalIdOrderByTimestampDesc(principalId)
+            .filter(incident -> actionTaken.equals(incident.getActionTaken()))
+            .map(Incident::getTimestamp)
+            .filter(timestamp -> timestamp != null && timestamp.isAfter(now.minus(INCIDENT_DEDUP_WINDOW)))
+            .isPresent();
     }
 }
