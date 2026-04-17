@@ -163,6 +163,10 @@ class AuthServiceTest {
 
         private final List<String> failedAttempts = new ArrayList<>();
 
+        RecordingAbuseDetectionService() {
+            super(null);
+        }
+
         @Override
         public void recordFailedAuthAttempt(String principalId) {
             failedAttempts.add(principalId);

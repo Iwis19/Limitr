@@ -97,6 +97,7 @@ class EnforcementServiceTest {
         private final int score;
 
         ScoreAbuseDetectionService(int score) {
+            super(null);
             this.score = score;
         }
 
