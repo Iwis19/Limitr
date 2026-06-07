@@ -162,12 +162,16 @@ New folder/
 └── docker-compose.yml
 ```
 
+---
+
 ## Lessons Learned
 - Designing layered API defenses that combine limits, scoring, and enforcement
 - Balancing protection with operator visibility through logs and incidents
 - Full-stack workflow with aligned control and logics
 - Managing JWT auth flow on Angular 
 - Iterating on threshold tuning without breaking 
+
+---
 
 ## License
 MIT
